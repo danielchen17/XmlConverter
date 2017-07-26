@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_xmlconverter" default="compile.module.xmlconverter">
+  <dirname property="module.xmlconverter.basedir" file="${ant.file.module_xmlconverter}"/>
+  
+  <property name="module.jdk.home.xmlconverter" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.xmlconverter" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.xmlconverter" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.xmlconverter" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="xmlconverter.output.dir" value="${module.xmlconverter.basedir}/out/production/XmlConverter"/>
+  <property name="xmlconverter.testoutput.dir" value="${module.xmlconverter.basedir}/out/test/XmlConverter"/>
+  
+  <path id="xmlconverter.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="xmlconverter.module.production.classpath">
+    <path refid="${module.jdk.classpath.xmlconverter}"/>
+    <path refid="library.kotlinjavaruntime.classpath"/>
+    <path refid="library.dom4j-2.0.1.classpath"/>
+  </path>
+  
+  <path id="xmlconverter.runtime.production.module.classpath">
+    <pathelement location="${xmlconverter.output.dir}"/>
+    <path refid="library.kotlinjavaruntime.classpath"/>
+    <path refid="library.dom4j-2.0.1.classpath"/>
+  </path>
+  
+  <path id="xmlconverter.module.classpath">
+    <path refid="${module.jdk.classpath.xmlconverter}"/>
+    <pathelement location="${xmlconverter.output.dir}"/>
+    <path refid="library.kotlinjavaruntime.classpath"/>
+    <path refid="library.dom4j-2.0.1.classpath"/>
+  </path>
+  
+  <path id="xmlconverter.runtime.module.classpath">
+    <pathelement location="${xmlconverter.testoutput.dir}"/>
+    <pathelement location="${xmlconverter.output.dir}"/>
+    <path refid="library.kotlinjavaruntime.classpath"/>
+    <path refid="library.dom4j-2.0.1.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.xmlconverter">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.xmlconverter">
+    <patternset refid="excluded.from.module.xmlconverter"/>
+  </patternset>
+  
+  <path id="xmlconverter.module.sourcepath">
+    <dirset dir="${module.xmlconverter.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.xmlconverter" depends="compile.module.xmlconverter.production,compile.module.xmlconverter.tests" description="Compile module XmlConverter"/>
+  
+  <target name="compile.module.xmlconverter.production" depends="register.custom.compilers" description="Compile module XmlConverter; production classes">
+    <mkdir dir="${xmlconverter.output.dir}"/>
+    <javac2 destdir="${xmlconverter.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.xmlconverter}/javac">
+      <compilerarg line="${compiler.args.xmlconverter}"/>
+      <bootclasspath refid="xmlconverter.module.bootclasspath"/>
+      <classpath refid="xmlconverter.module.production.classpath"/>
+      <src refid="xmlconverter.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.xmlconverter"/>
+    </javac2>
+    
+    <copy todir="${xmlconverter.output.dir}">
+      <fileset dir="${module.xmlconverter.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.xmlconverter.tests" depends="register.custom.compilers,compile.module.xmlconverter.production" description="compile module XmlConverter; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.xmlconverter" description="cleanup module">
+    <delete dir="${xmlconverter.output.dir}"/>
+    <delete dir="${xmlconverter.testoutput.dir}"/>
+  </target>
+</project>
