@@ -1,4 +1,5 @@
-import com.sun.deploy.util.StringUtils;
+package emq;
+
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -7,45 +8,38 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class Main {
     private Element mRoot;
-    private ArrayList<Node> nodeArrayList = new ArrayList<>();
+    private ArrayList<Node> mNodeList = new ArrayList<>();
+    private float mFactor;
 
     public static void main(String args[]) {
+        Float.parseFloat(args[0]);
         Main main = new Main();
-        main.readXml(args[0]);
-        main.writeXml(args[1]);
-    }
-
-    private void readFile(String path) {
-        File file = new File(path);
-        if (file.exists()) {
-
-        }
+        main.mFactor = 1.15f;
+        main.readXml("raw/dimens.xml");
+        main.writeXml("raw/test1.xml");
     }
 
     public class Node {
-        String tag;
-        String value;
-        ArrayList<String[]> attributeList;
+        String mName;
+        String mValue;
+        ArrayList<String[]> mAttributeList;
 
-        public Node(String tag, String value, ArrayList<String[]> attributeList) {
-            this.tag = tag;
-            this.value = value;
-            this.attributeList = attributeList;
+        public Node(String name, String value, ArrayList<String[]> attributeList) {
+            mName = name;
+            mValue = value;
+            mAttributeList = attributeList;
         }
-
     }
 
     private void readXml(String path) {
         SAXReader reader = new SAXReader();
         try {
             Document document = reader.read(new File(path));
-
             mRoot = document.getRootElement();
             Iterator<Element> it = mRoot.elementIterator();
 
@@ -55,14 +49,13 @@ public class Main {
 
                 ArrayList<String[]> list = new ArrayList<>();
                 for (Attribute attr : attributeList) {
-                    System.out.println(attr.getQualifiedName()  + "," + attr.getValue());
                     String[] attributePair = new String[2];
                     attributePair[0] = attr.getQualifiedName();
                     attributePair[1] = attr.getStringValue();
                     list.add(attributePair);
                 }
                 Node node = new Node(element.getName(), element.getStringValue(), list);
-                nodeArrayList.add(node);
+                mNodeList.add(node);
             }
 
         } catch (DocumentException e) {
@@ -74,15 +67,13 @@ public class Main {
         Document document = DocumentHelper.createDocument();
         Element root = document.addElement(mRoot.getQualifiedName());
 
-        for(Node node : nodeArrayList) {
-            Element element =  root.addElement(node.tag);
-
-            for (String[] list : node.attributeList) {
+        for(Node node : mNodeList) {
+            Element element =  root.addElement(node.mName);
+            for (String[] list : node.mAttributeList) {
                 element.addAttribute(list[0], list[1]);
             }
-            element.addText(convertValue(node.value));
+            element.addText(convertValue(node.mValue));
         }
-
 
         try {
             FileWriter out = new FileWriter(path);
@@ -94,13 +85,14 @@ public class Main {
         }
     }
 
-    private float mFactor = 1.15f;
     private String convertValue(String value) {
-        value = value.replaceAll("\\D+","");
-        if (value.isEmpty()) {
+        String digits;
+        digits = value.replaceAll("\\D+","");
+        String unit = value.substring(digits.length());
+        if (digits.isEmpty()) {
             return "";
         }  else {
-            return String.valueOf(Math.round(Float.parseFloat(value) * mFactor)) + "dp";
+            return String.valueOf(Math.round(Float.parseFloat(digits) * mFactor)) + unit;
         }
     }
 }
